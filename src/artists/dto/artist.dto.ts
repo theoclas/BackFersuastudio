@@ -81,3 +81,13 @@ export class UpdateArtistDto {
   @IsBoolean()
   isActive?: boolean;
 }
+
+export class CreateSpecDto {
+  @ApiProperty({ example: 'CDJ 3000' })
+  @IsString()
+  label: string;
+
+  @ApiProperty({ example: 'CDJs' })
+  @IsString()
+  category: string;
+}

@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateArtistDto, UpdateArtistDto } from './dto/artist.dto';
+import { CreateArtistDto, UpdateArtistDto, CreateSpecDto } from './dto/artist.dto';
 
 @Injectable()
 export class ArtistsService {
@@ -56,13 +56,54 @@ export class ArtistsService {
     return this.prisma.artist.create({ data: dto });
   }
 
-  async update(slug: string, dto: UpdateArtistDto) {
-    await this.findBySlug(slug);
+  async update(user: any, slug: string, dto: UpdateArtistDto) {
+    const artist = await this.findBySlug(slug);
+    
+    const hasPermission = user.artists.some((a: any) => a.id === artist.id);
+    if (!hasPermission) {
+      throw new UnauthorizedException('No tienes permisos para editar este perfil.');
+    }
+    
     return this.prisma.artist.update({ where: { slug }, data: dto });
   }
 
   async remove(slug: string) {
     await this.findBySlug(slug);
     return this.prisma.artist.update({ where: { slug }, data: { isActive: false } });
+  }
+
+  // ==== SPECS ====
+  async addSpec(user: any, slug: string, dto: CreateSpecDto) {
+    const artist = await this.findBySlug(slug);
+    
+    const hasPermission = user.artists.some((a: any) => a.id === artist.id);
+    if (!hasPermission) {
+      throw new UnauthorizedException('No tienes permisos para agregar specs.');
+    }
+
+    return this.prisma.spec.create({
+      data: {
+        label: dto.label,
+        category: dto.category,
+        artistId: artist.id,
+      },
+    });
+  }
+
+  async removeSpec(user: any, slug: string, specId: number) {
+    const artist = await this.findBySlug(slug);
+    
+    const hasPermission = user.artists.some((a: any) => a.id === artist.id);
+    if (!hasPermission) {
+      throw new UnauthorizedException('No tienes permisos para eliminar specs.');
+    }
+
+    // Verify spec exists and belongs to artist
+    const spec = await this.prisma.spec.findUnique({ where: { id: specId } });
+    if (!spec || spec.artistId !== artist.id) {
+      throw new NotFoundException('Spec no encontrado o no pertenece a este artista.');
+    }
+
+    return this.prisma.spec.delete({ where: { id: specId } });
   }
 }
