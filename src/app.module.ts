@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 import { PrismaModule } from './prisma/prisma.module';
 import { ArtistsModule } from './artists/artists.module';
 import { EventsModule } from './events/events.module';
@@ -13,6 +15,12 @@ import { ArtistasModule } from './artistas/artistas.module';
   imports: [
     // Variables de entorno disponibles en toda la app
     ConfigModule.forRoot({ isGlobal: true }),
+
+    // Servir archivos estáticos (fotos de artistas) desde /uploads
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', '..', 'uploads'),
+      serveRoot: '/uploads',
+    }),
 
     // Prisma global (MariaDB)
     PrismaModule,

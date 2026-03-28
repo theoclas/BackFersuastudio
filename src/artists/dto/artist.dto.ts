@@ -91,3 +91,18 @@ export class CreateSpecDto {
   @IsString()
   category: string;
 }
+
+export class CreateSocialDto {
+  @ApiProperty({ example: 'instagram' })
+  @IsString()
+  platform: string;
+
+  @ApiProperty({ example: 'https://instagram.com/...' })
+  @IsUrl()
+  url: string;
+
+  @ApiPropertyOptional({ example: '@user' })
+  @IsOptional()
+  @IsString()
+  label?: string;
+}

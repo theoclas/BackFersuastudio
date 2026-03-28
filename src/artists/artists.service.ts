@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ConflictException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateArtistDto, UpdateArtistDto, CreateSpecDto } from './dto/artist.dto';
+import { CreateArtistDto, UpdateArtistDto, CreateSpecDto, CreateSocialDto } from './dto/artist.dto';
 
 @Injectable()
 export class ArtistsService {
@@ -105,5 +105,73 @@ export class ArtistsService {
     }
 
     return this.prisma.spec.delete({ where: { id: specId } });
+  }
+
+  // ==== SOCIALS ====
+  async addSocial(user: any, slug: string, dto: CreateSocialDto) {
+    const artist = await this.findBySlug(slug);
+    
+    const hasPermission = user.artists.some((a: any) => a.id === artist.id);
+    if (!hasPermission) {
+      throw new UnauthorizedException('No tienes permisos para agregar redes sociales.');
+    }
+
+    return this.prisma.social.create({
+      data: {
+        platform: dto.platform,
+        url: dto.url,
+        label: dto.label,
+        artistId: artist.id,
+      },
+    });
+  }
+
+  async removeSocial(user: any, slug: string, socialId: number) {
+    const artist = await this.findBySlug(slug);
+    
+    const hasPermission = user.artists.some((a: any) => a.id === artist.id);
+    if (!hasPermission) {
+      throw new UnauthorizedException('No tienes permisos para eliminar redes sociales.');
+    }
+
+    const social = await this.prisma.social.findUnique({ where: { id: socialId } });
+    if (!social || social.artistId !== artist.id) {
+      throw new NotFoundException('Red social no encontrada o no pertenece a este artista.');
+    }
+
+    return this.prisma.social.delete({ where: { id: socialId } });
+  }
+
+  // ==== PHOTOS ====
+  async addPhoto(user: any, slug: string, url: string) {
+    const artist = await this.findBySlug(slug);
+    
+    const hasPermission = user.artists.some((a: any) => a.id === artist.id);
+    if (!hasPermission) {
+      throw new UnauthorizedException('No tienes permisos para subir fotos.');
+    }
+
+    return this.prisma.photo.create({
+      data: {
+        url,
+        artistId: artist.id,
+      },
+    });
+  }
+
+  async removePhoto(user: any, slug: string, photoId: number) {
+    const artist = await this.findBySlug(slug);
+    
+    const hasPermission = user.artists.some((a: any) => a.id === artist.id);
+    if (!hasPermission) {
+      throw new UnauthorizedException('No tienes permisos para eliminar fotos.');
+    }
+
+    const photo = await this.prisma.photo.findUnique({ where: { id: photoId } });
+    if (!photo || photo.artistId !== artist.id) {
+      throw new NotFoundException('Foto no encontrada o no pertenece a este artista.');
+    }
+
+    return this.prisma.photo.delete({ where: { id: photoId } });
   }
 }

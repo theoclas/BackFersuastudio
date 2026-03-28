@@ -1,7 +1,10 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, UseGuards, Req, ParseIntPipe } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { Controller, Get, Post, Patch, Delete, Param, Body, UseGuards, Req, ParseIntPipe, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { ArtistsService } from './artists.service';
-import { CreateArtistDto, UpdateArtistDto, CreateSpecDto } from './dto/artist.dto';
+import { CreateArtistDto, UpdateArtistDto, CreateSpecDto, CreateSocialDto } from './dto/artist.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Artists')
@@ -60,5 +63,57 @@ export class ArtistsController {
   @ApiOperation({ summary: 'Eliminar Spec/Equipo del Rider' })
   removeSpec(@Param('slug') slug: string, @Param('specId', ParseIntPipe) specId: number, @Req() req: any) {
     return this.artistsService.removeSpec(req.user, slug, specId);
+  }
+
+  // ==== SOCIALS ====
+  @Post(':slug/socials')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Agregar Red Social al Artista' })
+  addSocial(@Param('slug') slug: string, @Body() dto: CreateSocialDto, @Req() req: any) {
+    return this.artistsService.addSocial(req.user, slug, dto);
+  }
+
+  @Delete(':slug/socials/:socialId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Eliminar Red Social' })
+  removeSocial(@Param('slug') slug: string, @Param('socialId', ParseIntPipe) socialId: number, @Req() req: any) {
+    return this.artistsService.removeSocial(req.user, slug, socialId);
+  }
+
+  // ==== PHOTOS / GALLERY ====
+  @Post(':slug/photos')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+      },
+    },
+  })
+  @ApiOperation({ summary: 'Subir una foto a la galería del artista' })
+  @UseInterceptors(FileInterceptor('file', {
+    storage: diskStorage({
+      destination: './uploads/artists',
+      filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        cb(null, `${file.fieldname}-${uniqueSuffix}${extname(file.originalname)}`);
+      },
+    }),
+  }))
+  async uploadPhoto(@Param('slug') slug: string, @UploadedFile() file: any, @Req() req: any) {
+    return this.artistsService.addPhoto(req.user, slug, `/uploads/artists/${file.filename}`);
+  }
+
+  @Delete(':slug/photos/:photoId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Eliminar una foto de la galería' })
+  removePhoto(@Param('slug') slug: string, @Param('photoId', ParseIntPipe) photoId: number, @Req() req: any) {
+    return this.artistsService.removePhoto(req.user, slug, photoId);
   }
 }
