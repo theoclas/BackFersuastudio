@@ -49,6 +49,9 @@ Crea un archivo `.env` en la raíz de la carpeta del backend en Hostinger con es
 PORT=3000
 DATABASE_URL="mysql://usuario:password@localhost:3306/nombre_db"
 JWT_SECRET="TU_CLAVE_SECRETA_ALEATORIA_Y_LARGA"
+
+# ¡IMPORTANTE!: Cambia esta URL por la de tu dominio real en producción 
+# para que el Dashboard funcione (ej: https://fersuastudio.com)
 FRONTEND_URL="https://tu-dominio.com"
 ```
 
