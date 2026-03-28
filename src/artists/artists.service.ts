@@ -174,4 +174,19 @@ export class ArtistsService {
 
     return this.prisma.photo.delete({ where: { id: photoId } });
   }
+
+  // ==== COVER IMAGE ====
+  async uploadCover(user: any, slug: string, url: string) {
+    const artist = await this.findBySlug(slug);
+    
+    const hasPermission = user.artists.some((a: any) => a.id === artist.id);
+    if (!hasPermission) {
+      throw new UnauthorizedException('No tienes permisos para cambiar la foto de portada.');
+    }
+
+    return this.prisma.artist.update({
+      where: { id: artist.id },
+      data: { coverImage: url },
+    });
+  }
 }

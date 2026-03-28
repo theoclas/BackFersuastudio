@@ -21,7 +21,7 @@ Actualmente existe la tabla `Event` relacionada al artista.
 ## 4. Expansión del Modelado de Datos (Prisma)
 El frontend actualmente agrupa varios "sub-artistas" bajo un "dúo" (ej: MacFly y Mike Bran individualizados dentro del perfíl conjunto).
 - [ ] **(Sugerencia) Añadir Tabla `ArtistMember`:** Si se van a gestionar desde el Back, crear un modelo en Prisma similar a `ArtistMember` que enlace al `Artist` principal, para poder llenar sus nombres, rols, y descripciones individuales dinámicamente. 
-- [ ] **Galería Dinámica (`Photo`):** Construir los endpoints `POST /photos` para subir imágenes y retornar las URLs, actualizándolas en la base de datos (actualmente resuelto por glob pattern en disco).
+- [x] **Galería Dinámica (`Photo`):** Construir los endpoints `POST /photos` para subir imágenes y retornar las URLs, actualizándolas en la base de datos (servidas estáticamente por NestJS).
 
 ## 5. Controladores para Rider/Specs
 - [x] Endpoints para CRUD en las tablas `Spec` (hardware) y `Social` (links de redes y Spotify embeds) desde el futuro dashboard, para que no estén hardcodeadas en fallback de React.

@@ -116,4 +116,31 @@ export class ArtistsController {
   removePhoto(@Param('slug') slug: string, @Param('photoId', ParseIntPipe) photoId: number, @Req() req: any) {
     return this.artistsService.removePhoto(req.user, slug, photoId);
   }
+
+  // ==== COVER IMAGE ====
+  @Post(':slug/cover')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+      },
+    },
+  })
+  @ApiOperation({ summary: 'Subir la foto de portada principal del artista' })
+  @UseInterceptors(FileInterceptor('file', {
+    storage: diskStorage({
+      destination: './uploads/artists',
+      filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        cb(null, `cover-${uniqueSuffix}${extname(file.originalname)}`);
+      },
+    }),
+  }))
+  async uploadCover(@Param('slug') slug: string, @UploadedFile() file: any, @Req() req: any) {
+    return this.artistsService.uploadCover(req.user, slug, `/uploads/artists/${file.filename}`);
+  }
 }
