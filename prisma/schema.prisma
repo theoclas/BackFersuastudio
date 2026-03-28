@@ -1,0 +1,172 @@
+// ============================================================
+//  FersuaStudio — Prisma Schema
+//  Base de datos: MariaDB (compatible con Hostinger MySQL)
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ──────────────────────────────────────────
+//  ARTISTAS
+// ──────────────────────────────────────────
+model Artist {
+  id          String   @id @default(cuid())
+  slug        String   @unique @db.VarChar(100)   // "macfly-mikebran", "diann-makinne"
+  name        String   @db.VarChar(150)
+  tagline     String?  @db.VarChar(255)            // "DJs · Productores · Live"
+  bio         String   @db.Text
+  city        String?  @db.VarChar(100)
+  coverImage  String?  @db.VarChar(500)
+  headerImage String?  @db.VarChar(500)
+  whatsapp    String?  @db.VarChar(30)            // número para link wa.me/
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  genres    Genre[]
+  socials   Social[]
+  events    Event[]
+  bookings  Booking[]
+  photos    Photo[]
+  specs     Spec[]
+
+  @@map("artists")
+}
+
+// ──────────────────────────────────────────
+//  GÉNEROS MUSICALES
+// ──────────────────────────────────────────
+model Genre {
+  id       Int    @id @default(autoincrement())
+  name     String @db.VarChar(80)
+  artist   Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  artistId String
+
+  @@map("genres")
+}
+
+// ──────────────────────────────────────────
+//  REDES SOCIALES
+// ──────────────────────────────────────────
+model Social {
+  id       Int    @id @default(autoincrement())
+  platform String @db.VarChar(50)   // "instagram", "soundcloud", "spotify"
+  url      String @db.VarChar(500)
+  label    String? @db.VarChar(80)  // "@macfly_dj"
+  artist   Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  artistId String
+
+  @@map("socials")
+}
+
+// ──────────────────────────────────────────
+//  SPECS TÉCNICOS (Rider)
+// ──────────────────────────────────────────
+model Spec {
+  id       Int    @id @default(autoincrement())
+  label    String @db.VarChar(100)  // "DJM V10", "CDJ 3000"
+  category String @db.VarChar(80)   // "Mixer", "CDJs", "Sound"
+  artist   Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  artistId String
+
+  @@map("specs")
+}
+
+// ──────────────────────────────────────────
+//  EVENTOS / SHOWS
+// ──────────────────────────────────────────
+model Event {
+  id        String      @id @default(cuid())
+  artist    Artist      @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  artistId  String
+  title     String      @db.VarChar(200)
+  venue     String      @db.VarChar(200)
+  city      String      @db.VarChar(100)
+  date      DateTime
+  ticketUrl String?     @db.VarChar(500)
+  notes     String?     @db.VarChar(500)
+  status    EventStatus @default(UPCOMING)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@map("events")
+}
+
+enum EventStatus {
+  UPCOMING
+  PAST
+  CANCELLED
+}
+
+// ──────────────────────────────────────────
+//  SOLICITUDES DE BOOKING
+// ──────────────────────────────────────────
+model Booking {
+  id          String        @id @default(cuid())
+  artist      Artist?       @relation(fields: [artistId], references: [id], onDelete: SetNull)
+  artistId    String?
+  
+  // Datos del solicitante
+  name        String        @db.VarChar(150)
+  email       String        @db.VarChar(150)
+  phone       String?       @db.VarChar(30)
+  
+  // Datos del evento
+  eventType   String        @db.VarChar(80)    // "club", "festival", "privado", "corporativo"
+  eventDate   DateTime?
+  eventCity   String?       @db.VarChar(100)
+  message     String?       @db.Text
+  
+  // Gestión interna
+  status      BookingStatus @default(PENDING)
+  adminNotes  String?       @db.Text
+  
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("bookings")
+}
+
+enum BookingStatus {
+  PENDING      // Recibida, sin revisar
+  REVIEWED     // Revisada por el equipo
+  CONFIRMED    // Confirmada
+  REJECTED     // Rechazada
+}
+
+// ──────────────────────────────────────────
+//  GALERÍA DE FOTOS
+// ──────────────────────────────────────────
+model Photo {
+  id        Int      @id @default(autoincrement())
+  artist    Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  artistId  String
+  url       String   @db.VarChar(500)
+  caption   String?  @db.VarChar(255)
+  category  String?  @db.VarChar(80)   // "promo", "backstage", "live"
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@map("photos")
+}
+
+// ──────────────────────────────────────────
+//  USUARIOS ADMIN
+// ──────────────────────────────────────────
+model AdminUser {
+  id        String   @id @default(cuid())
+  email     String   @unique @db.VarChar(150)
+  password  String   @db.VarChar(255)   // bcrypt hash
+  name      String   @db.VarChar(100)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@map("admin_users")
+}
