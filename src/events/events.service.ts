@@ -76,6 +76,6 @@ export class EventsService {
       throw new UnauthorizedException('No tienes permisos para eliminar este evento.');
     }
 
-    return this.prisma.event.update({ where: { id }, data: { status: 'CANCELLED' } });
+    return this.prisma.event.delete({ where: { id } });
   }
 }

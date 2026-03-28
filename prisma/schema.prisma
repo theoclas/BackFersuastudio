@@ -35,6 +35,7 @@ model Artist {
   bookings  Booking[]
   photos    Photo[]
   specs     Spec[]
+  users     User[]    // Relación Muchos-a-Muchos: Usuarios que gestionan/tienen acceso a este artista
 
   @@map("artists")
 }
@@ -158,15 +159,18 @@ model Photo {
 }
 
 // ──────────────────────────────────────────
-//  USUARIOS ADMIN
+//  USUARIOS / LOGIN
 // ──────────────────────────────────────────
-model AdminUser {
+model User {
   id        String   @id @default(cuid())
   email     String   @unique @db.VarChar(150)
-  password  String   @db.VarChar(255)   // bcrypt hash
+  password  String   @db.VarChar(255)   // Contraseña protegida (hash)
   name      String   @db.VarChar(100)
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
 
-  @@map("admin_users")
+  // Relación Muchos-a-Muchos: Un usuario gestiona varios artistas
+  artists   Artist[] 
+
+  @@map("users")
 }

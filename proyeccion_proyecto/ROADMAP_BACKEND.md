@@ -13,10 +13,10 @@ Dado que el schema de Prisma ya tiene la relación de Muchos-a-Muchos (`User <->
 
 ## 3. Endpoints de Eventos/Fechas (`EventsModule`)
 Actualmente existe la tabla `Event` relacionada al artista.
-- [ ] **`POST /events`**: Ruta para agregar una nueva fecha (req.body: { title, date, venue, city, artistId, ... }). Protegida por Auth Guard.
-- [ ] **`PUT /events/:id`**: Ruta para actualizar info (cambiar de ciudad, etc.).
-- [ ] **`DELETE /events/:id`**: Ruta para borrar/cancelar fechas.
-- [ ] **`GET /events/artist/:slug`**: (Pública) Ruta para retornar solo las fechas activas de un artista para mostrarlas en la landing.
+- [x] **`POST /events`**: Ruta para agregar una nueva fecha (req.body: { title, date, venue, city, artistId, ... }). Protegida por Auth Guard.
+- [x] **`PUT /events/:id`**: Ruta para actualizar info (cambiar de ciudad, etc.).
+- [x] **`DELETE /events/:id`**: Ruta para borrar/cancelar fechas.
+- [x] **`GET /events/artist/:slug`**: (Pública) Ruta para retornar solo las fechas activas de un artista para mostrarlas en la landing.
 
 ## 4. Expansión del Modelado de Datos (Prisma)
 El frontend actualmente agrupa varios "sub-artistas" bajo un "dúo" (ej: MacFly y Mike Bran individualizados dentro del perfíl conjunto).

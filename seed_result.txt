@@ -1,0 +1,14 @@
+﻿
+> fersuastudio-backend@1.0.0 seed
+> ts-node prisma/seed.ts
+
+­ƒî▒ Iniciando seed de FersuaStudio...
+
+Ô£à Admin creado: admin@fersuastudio.com / Admin123!
+   ÔÜá´©Å  Cambia la contrase├▒a despu├®s del primer login!
+
+Ô£à Artista creado/actualizado: Mac Fly & Mike Bran
+Ô£à Artista creado/actualizado: Diann & Makinne
+Ô£à Artista creado/actualizado: Molina Music
+
+­ƒÄë Seed completado exitosamente!
