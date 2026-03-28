@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateEventDto, UpdateEventDto } from './dto/event.dto';
 
@@ -37,7 +37,12 @@ export class EventsService {
     return event;
   }
 
-  async create(dto: CreateEventDto) {
+  async create(user: any, dto: CreateEventDto) {
+    const hasPermission = user.artists.some((a: any) => a.id === dto.artistId);
+    if (!hasPermission) {
+      throw new UnauthorizedException('No tienes permisos para crear eventos para este artista.');
+    }
+
     return this.prisma.event.create({
       data: {
         ...dto,
@@ -46,8 +51,14 @@ export class EventsService {
     });
   }
 
-  async update(id: string, dto: UpdateEventDto) {
-    await this.findOne(id);
+  async update(user: any, id: string, dto: UpdateEventDto) {
+    const event = await this.findOne(id);
+    
+    const hasPermission = user.artists.some((a: any) => a.id === event.artistId);
+    if (!hasPermission) {
+      throw new UnauthorizedException('No tienes permisos para editar este evento.');
+    }
+
     return this.prisma.event.update({
       where: { id },
       data: {
@@ -57,8 +68,14 @@ export class EventsService {
     });
   }
 
-  async remove(id: string) {
-    await this.findOne(id);
+  async remove(user: any, id: string) {
+    const event = await this.findOne(id);
+    
+    const hasPermission = user.artists.some((a: any) => a.id === event.artistId);
+    if (!hasPermission) {
+      throw new UnauthorizedException('No tienes permisos para eliminar este evento.');
+    }
+
     return this.prisma.event.update({ where: { id }, data: { status: 'CANCELLED' } });
   }
 }

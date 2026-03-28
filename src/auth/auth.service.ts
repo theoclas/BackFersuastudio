@@ -12,7 +12,14 @@ export class AuthService {
   ) {}
 
   async login(dto: LoginDto) {
-    const user = await this.prisma.adminUser.findUnique({ where: { email: dto.email } });
+    const user = await this.prisma.user.findUnique({ 
+      where: { email: dto.email },
+      include: {
+        artists: {
+          select: { id: true, slug: true, name: true, coverImage: true }
+        }
+      }
+    });
 
     if (!user || !user.isActive) {
       throw new UnauthorizedException('Credenciales inválidas');
@@ -26,14 +33,14 @@ export class AuthService {
 
     return {
       access_token: token,
-      user: { id: user.id, email: user.email, name: user.name },
+      user: { id: user.id, email: user.email, name: user.name, artists: user.artists },
     };
   }
 
   // Útil para crear el primer admin desde seed
   async createAdmin(email: string, password: string, name: string) {
     const hash = await bcrypt.hash(password, 10);
-    return this.prisma.adminUser.create({
+    return this.prisma.user.create({
       data: { email, password: hash, name },
     });
   }

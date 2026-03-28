@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Body, Query, UseGuards, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { EventsService } from './events.service';
 import { CreateEventDto, UpdateEventDto } from './dto/event.dto';
@@ -32,24 +32,24 @@ export class EventsController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Crear evento (admin)' })
-  create(@Body() dto: CreateEventDto) {
-    return this.eventsService.create(dto);
+  @ApiOperation({ summary: 'Crear evento (requiere permisos sobre el artista)' })
+  create(@Body() dto: CreateEventDto, @Request() req: any) {
+    return this.eventsService.create(req.user, dto);
   }
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Actualizar evento (admin)' })
-  update(@Param('id') id: string, @Body() dto: UpdateEventDto) {
-    return this.eventsService.update(id, dto);
+  @ApiOperation({ summary: 'Actualizar evento (requiere permisos)' })
+  update(@Param('id') id: string, @Body() dto: UpdateEventDto, @Request() req: any) {
+    return this.eventsService.update(req.user, id, dto);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Cancelar evento (admin)' })
-  remove(@Param('id') id: string) {
-    return this.eventsService.remove(id);
+  @ApiOperation({ summary: 'Cancelar evento (requiere permisos)' })
+  remove(@Param('id') id: string, @Request() req: any) {
+    return this.eventsService.remove(req.user, id);
   }
 }

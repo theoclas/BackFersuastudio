@@ -16,11 +16,11 @@ async function main() {
   const adminEmail = 'admin@fersuastudio.com';
   const adminPassword = 'Admin123!';
 
-  const existingAdmin = await prisma.adminUser.findUnique({ where: { email: adminEmail } });
+  const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
 
   if (!existingAdmin) {
     const hash = await bcrypt.hash(adminPassword, 10);
-    await prisma.adminUser.create({
+    await prisma.user.create({
       data: {
         email: adminEmail,
         password: hash,
@@ -121,6 +121,21 @@ async function main() {
     },
   });
   console.log(`✅ Artista creado/actualizado: ${molina.name}`);
+
+  // ── Enlazar artistas al admin ──
+  await prisma.user.update({
+    where: { email: adminEmail },
+    data: {
+      artists: {
+        connect: [
+          { slug: macfly.slug },
+          { slug: diann.slug },
+          { slug: molina.slug },
+        ]
+      }
+    }
+  });
+  console.log(`✅ Artistas enlazados exitosamente al administrador: ${adminEmail}`);
 
   console.log('\n🎉 Seed completado exitosamente!');
 }
