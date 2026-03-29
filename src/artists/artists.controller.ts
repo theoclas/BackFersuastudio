@@ -1,11 +1,27 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, UseGuards, Req, ParseIntPipe, UseInterceptors, UploadedFile } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Req,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { galleryDiskStorage, imageFileFilter, IMAGE_UPLOAD_MAX_BYTES } from './multer-image.config';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { ArtistsService } from './artists.service';
 import { CreateArtistDto, UpdateArtistDto, CreateSpecDto, CreateSocialDto, CreateGenreDto } from './dto/artist.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole } from '@prisma/client';
 
 @ApiTags('Artists')
 @Controller('artists')
@@ -25,9 +41,10 @@ export class ArtistsController {
   }
 
   @Post()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Crear artista (admin)' })
+  @ApiOperation({ summary: 'Crear artista (solo administrador)' })
   create(@Body() dto: CreateArtistDto) {
     return this.artistsService.create(dto);
   }
@@ -41,11 +58,12 @@ export class ArtistsController {
   }
 
   @Delete(':slug')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Desactivar artista (admin)' })
-  remove(@Param('slug') slug: string) {
-    return this.artistsService.remove(slug);
+  @ApiOperation({ summary: 'Desactivar artista (solo administrador)' })
+  remove(@Req() req: any, @Param('slug') slug: string) {
+    return this.artistsService.remove(req.user, slug);
   }
 
   // ==== SPECS ====
@@ -113,16 +131,15 @@ export class ArtistsController {
     },
   })
   @ApiOperation({ summary: 'Subir una foto a la galería del artista' })
-  @UseInterceptors(FileInterceptor('file', {
-    storage: diskStorage({
-      destination: './uploads/artists',
-      filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        cb(null, `${file.fieldname}-${uniqueSuffix}${extname(file.originalname)}`);
-      },
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: IMAGE_UPLOAD_MAX_BYTES },
+      fileFilter: imageFileFilter,
+      storage: galleryDiskStorage('file'),
     }),
-  }))
-  async uploadPhoto(@Param('slug') slug: string, @UploadedFile() file: any, @Req() req: any) {
+  )
+  async uploadPhoto(@Param('slug') slug: string, @UploadedFile() file: Express.Multer.File | undefined, @Req() req: any) {
+    if (!file) throw new BadRequestException('Archivo de imagen requerido.');
     return this.artistsService.addPhoto(req.user, slug, `/uploads/artists/${file.filename}`);
   }
 
@@ -148,16 +165,15 @@ export class ArtistsController {
     },
   })
   @ApiOperation({ summary: 'Subir la foto de portada principal del artista' })
-  @UseInterceptors(FileInterceptor('file', {
-    storage: diskStorage({
-      destination: './uploads/artists',
-      filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        cb(null, `cover-${uniqueSuffix}${extname(file.originalname)}`);
-      },
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: IMAGE_UPLOAD_MAX_BYTES },
+      fileFilter: imageFileFilter,
+      storage: galleryDiskStorage('cover'),
     }),
-  }))
-  async uploadCover(@Param('slug') slug: string, @UploadedFile() file: any, @Req() req: any) {
+  )
+  async uploadCover(@Param('slug') slug: string, @UploadedFile() file: Express.Multer.File | undefined, @Req() req: any) {
+    if (!file) throw new BadRequestException('Archivo de imagen requerido.');
     return this.artistsService.uploadCover(req.user, slug, `/uploads/artists/${file.filename}`);
   }
 }

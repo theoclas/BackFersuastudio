@@ -1,10 +1,21 @@
 import { Injectable, NotFoundException, ConflictException, UnauthorizedException } from '@nestjs/common';
+import { existsSync } from 'fs';
+import { unlink } from 'fs/promises';
+import { join } from 'path';
+import { UserRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateArtistDto, UpdateArtistDto, CreateSpecDto, CreateSocialDto } from './dto/artist.dto';
+
+type AuthUser = { role: UserRole; artists: { id: string }[] };
 
 @Injectable()
 export class ArtistsService {
   constructor(private prisma: PrismaService) {}
+
+  private canManageArtist(user: AuthUser, artistId: string): boolean {
+    if (user.role === UserRole.ADMIN) return true;
+    return user.artists.some((a) => a.id === artistId);
+  }
 
   async findAll() {
     return this.prisma.artist.findMany({
@@ -56,28 +67,29 @@ export class ArtistsService {
     return this.prisma.artist.create({ data: dto });
   }
 
-  async update(user: any, slug: string, dto: UpdateArtistDto) {
+  async update(user: AuthUser, slug: string, dto: UpdateArtistDto) {
     const artist = await this.findBySlug(slug);
-    
-    const hasPermission = user.artists.some((a: any) => a.id === artist.id);
-    if (!hasPermission) {
+
+    if (!this.canManageArtist(user, artist.id)) {
       throw new UnauthorizedException('No tienes permisos para editar este perfil.');
     }
     
     return this.prisma.artist.update({ where: { slug }, data: dto });
   }
 
-  async remove(slug: string) {
+  async remove(user: AuthUser, slug: string) {
+    if (user.role !== UserRole.ADMIN) {
+      throw new UnauthorizedException('Solo un administrador puede desactivar artistas.');
+    }
     await this.findBySlug(slug);
     return this.prisma.artist.update({ where: { slug }, data: { isActive: false } });
   }
 
   // ==== SPECS ====
-  async addSpec(user: any, slug: string, dto: CreateSpecDto) {
+  async addSpec(user: AuthUser, slug: string, dto: CreateSpecDto) {
     const artist = await this.findBySlug(slug);
-    
-    const hasPermission = user.artists.some((a: any) => a.id === artist.id);
-    if (!hasPermission) {
+
+    if (!this.canManageArtist(user, artist.id)) {
       throw new UnauthorizedException('No tienes permisos para agregar specs.');
     }
 
@@ -90,11 +102,10 @@ export class ArtistsService {
     });
   }
 
-  async removeSpec(user: any, slug: string, specId: number) {
+  async removeSpec(user: AuthUser, slug: string, specId: number) {
     const artist = await this.findBySlug(slug);
-    
-    const hasPermission = user.artists.some((a: any) => a.id === artist.id);
-    if (!hasPermission) {
+
+    if (!this.canManageArtist(user, artist.id)) {
       throw new UnauthorizedException('No tienes permisos para eliminar specs.');
     }
 
@@ -108,11 +119,10 @@ export class ArtistsService {
   }
 
   // ==== SOCIALS ====
-  async addSocial(user: any, slug: string, dto: CreateSocialDto) {
+  async addSocial(user: AuthUser, slug: string, dto: CreateSocialDto) {
     const artist = await this.findBySlug(slug);
-    
-    const hasPermission = user.artists.some((a: any) => a.id === artist.id);
-    if (!hasPermission) {
+
+    if (!this.canManageArtist(user, artist.id)) {
       throw new UnauthorizedException('No tienes permisos para agregar redes sociales.');
     }
 
@@ -126,11 +136,10 @@ export class ArtistsService {
     });
   }
 
-  async removeSocial(user: any, slug: string, socialId: number) {
+  async removeSocial(user: AuthUser, slug: string, socialId: number) {
     const artist = await this.findBySlug(slug);
-    
-    const hasPermission = user.artists.some((a: any) => a.id === artist.id);
-    if (!hasPermission) {
+
+    if (!this.canManageArtist(user, artist.id)) {
       throw new UnauthorizedException('No tienes permisos para eliminar redes sociales.');
     }
 
@@ -143,11 +152,10 @@ export class ArtistsService {
   }
 
   // ==== GENRES ====
-  async addGenre(user: any, slug: string, dto: import('./dto/artist.dto').CreateGenreDto) {
+  async addGenre(user: AuthUser, slug: string, dto: import('./dto/artist.dto').CreateGenreDto) {
     const artist = await this.findBySlug(slug);
-    
-    const hasPermission = user.artists.some((a: any) => a.id === artist.id);
-    if (!hasPermission) {
+
+    if (!this.canManageArtist(user, artist.id)) {
       throw new UnauthorizedException('No tienes permisos para agregar géneros.');
     }
 
@@ -159,11 +167,10 @@ export class ArtistsService {
     });
   }
 
-  async removeGenre(user: any, slug: string, genreId: number) {
+  async removeGenre(user: AuthUser, slug: string, genreId: number) {
     const artist = await this.findBySlug(slug);
-    
-    const hasPermission = user.artists.some((a: any) => a.id === artist.id);
-    if (!hasPermission) {
+
+    if (!this.canManageArtist(user, artist.id)) {
       throw new UnauthorizedException('No tienes permisos para eliminar géneros.');
     }
 
@@ -176,11 +183,10 @@ export class ArtistsService {
   }
 
   // ==== PHOTOS ====
-  async addPhoto(user: any, slug: string, url: string) {
+  async addPhoto(user: AuthUser, slug: string, url: string) {
     const artist = await this.findBySlug(slug);
-    
-    const hasPermission = user.artists.some((a: any) => a.id === artist.id);
-    if (!hasPermission) {
+
+    if (!this.canManageArtist(user, artist.id)) {
       throw new UnauthorizedException('No tienes permisos para subir fotos.');
     }
 
@@ -192,11 +198,10 @@ export class ArtistsService {
     });
   }
 
-  async removePhoto(user: any, slug: string, photoId: number) {
+  async removePhoto(user: AuthUser, slug: string, photoId: number) {
     const artist = await this.findBySlug(slug);
-    
-    const hasPermission = user.artists.some((a: any) => a.id === artist.id);
-    if (!hasPermission) {
+
+    if (!this.canManageArtist(user, artist.id)) {
       throw new UnauthorizedException('No tienes permisos para eliminar fotos.');
     }
 
@@ -205,15 +210,21 @@ export class ArtistsService {
       throw new NotFoundException('Foto no encontrada o no pertenece a este artista.');
     }
 
+    if (photo.url.startsWith('/uploads/')) {
+      const abs = join(process.cwd(), photo.url.replace(/^\/+/, ''));
+      if (existsSync(abs)) {
+        await unlink(abs).catch(() => undefined);
+      }
+    }
+
     return this.prisma.photo.delete({ where: { id: photoId } });
   }
 
   // ==== COVER IMAGE ====
-  async uploadCover(user: any, slug: string, url: string) {
+  async uploadCover(user: AuthUser, slug: string, url: string) {
     const artist = await this.findBySlug(slug);
-    
-    const hasPermission = user.artists.some((a: any) => a.id === artist.id);
-    if (!hasPermission) {
+
+    if (!this.canManageArtist(user, artist.id)) {
       throw new UnauthorizedException('No tienes permisos para cambiar la foto de portada.');
     }
 

@@ -4,7 +4,7 @@
 //  O con: npm run seed
 // ============================================================
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, UserRole } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -25,12 +25,17 @@ async function main() {
         email: adminEmail,
         password: hash,
         name: 'Fernando Admin',
+        role: UserRole.ADMIN,
       },
     });
     console.log(`✅ Admin creado: ${adminEmail} / ${adminPassword}`);
     console.log('   ⚠️  Cambia la contraseña después del primer login!\n');
   } else {
-    console.log(`ℹ️  Admin ya existe: ${adminEmail}\n`);
+    await prisma.user.update({
+      where: { email: adminEmail },
+      data: { role: UserRole.ADMIN },
+    });
+    console.log(`ℹ️  Admin ya existe (rol ADMIN asegurado): ${adminEmail}\n`);
   }
 
   // ── Artista 1: Mac Fly & Mike Bran ──

@@ -11,11 +11,17 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EventsService = void 0;
 const common_1 = require("@nestjs/common");
+const client_1 = require("@prisma/client");
 const prisma_service_1 = require("../prisma/prisma.service");
 let EventsService = class EventsService {
     prisma;
     constructor(prisma) {
         this.prisma = prisma;
+    }
+    canManageArtist(user, artistId) {
+        if (user.role === client_1.UserRole.ADMIN)
+            return true;
+        return user.artists.some((a) => a.id === artistId);
     }
     async findAll(artistSlug) {
         return this.prisma.event.findMany({
@@ -47,8 +53,7 @@ let EventsService = class EventsService {
         return event;
     }
     async create(user, dto) {
-        const hasPermission = user.artists.some((a) => a.id === dto.artistId);
-        if (!hasPermission) {
+        if (!this.canManageArtist(user, dto.artistId)) {
             throw new common_1.UnauthorizedException('No tienes permisos para crear eventos para este artista.');
         }
         return this.prisma.event.create({
@@ -60,8 +65,7 @@ let EventsService = class EventsService {
     }
     async update(user, id, dto) {
         const event = await this.findOne(id);
-        const hasPermission = user.artists.some((a) => a.id === event.artistId);
-        if (!hasPermission) {
+        if (!this.canManageArtist(user, event.artistId)) {
             throw new common_1.UnauthorizedException('No tienes permisos para editar este evento.');
         }
         return this.prisma.event.update({
@@ -74,8 +78,7 @@ let EventsService = class EventsService {
     }
     async remove(user, id) {
         const event = await this.findOne(id);
-        const hasPermission = user.artists.some((a) => a.id === event.artistId);
-        if (!hasPermission) {
+        if (!this.canManageArtist(user, event.artistId)) {
             throw new common_1.UnauthorizedException('No tienes permisos para eliminar este evento.');
         }
         return this.prisma.event.delete({ where: { id } });

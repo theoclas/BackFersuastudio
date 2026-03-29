@@ -10,11 +10,13 @@ exports.ArtistsModule = void 0;
 const common_1 = require("@nestjs/common");
 const artists_controller_1 = require("./artists.controller");
 const artists_service_1 = require("./artists.service");
+const auth_module_1 = require("../auth/auth.module");
 let ArtistsModule = class ArtistsModule {
 };
 exports.ArtistsModule = ArtistsModule;
 exports.ArtistsModule = ArtistsModule = __decorate([
     (0, common_1.Module)({
+        imports: [auth_module_1.AuthModule],
         controllers: [artists_controller_1.ArtistsController],
         providers: [artists_service_1.ArtistsService],
         exports: [artists_service_1.ArtistsService],

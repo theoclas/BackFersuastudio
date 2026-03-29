@@ -15,12 +15,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ArtistsController = void 0;
 const common_1 = require("@nestjs/common");
 const platform_express_1 = require("@nestjs/platform-express");
-const multer_1 = require("multer");
-const path_1 = require("path");
+const multer_image_config_1 = require("./multer-image.config");
 const swagger_1 = require("@nestjs/swagger");
 const artists_service_1 = require("./artists.service");
 const artist_dto_1 = require("./dto/artist.dto");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
+const roles_guard_1 = require("../auth/guards/roles.guard");
+const roles_decorator_1 = require("../auth/decorators/roles.decorator");
+const client_1 = require("@prisma/client");
 let ArtistsController = class ArtistsController {
     artistsService;
     constructor(artistsService) {
@@ -38,8 +40,8 @@ let ArtistsController = class ArtistsController {
     update(slug, dto, req) {
         return this.artistsService.update(req.user, slug, dto);
     }
-    remove(slug) {
-        return this.artistsService.remove(slug);
+    remove(req, slug) {
+        return this.artistsService.remove(req.user, slug);
     }
     addSpec(slug, dto, req) {
         return this.artistsService.addSpec(req.user, slug, dto);
@@ -60,12 +62,16 @@ let ArtistsController = class ArtistsController {
         return this.artistsService.removeGenre(req.user, slug, genreId);
     }
     async uploadPhoto(slug, file, req) {
+        if (!file)
+            throw new common_1.BadRequestException('Archivo de imagen requerido.');
         return this.artistsService.addPhoto(req.user, slug, `/uploads/artists/${file.filename}`);
     }
     removePhoto(slug, photoId, req) {
         return this.artistsService.removePhoto(req.user, slug, photoId);
     }
     async uploadCover(slug, file, req) {
+        if (!file)
+            throw new common_1.BadRequestException('Archivo de imagen requerido.');
         return this.artistsService.uploadCover(req.user, slug, `/uploads/artists/${file.filename}`);
     }
 };
@@ -87,9 +93,10 @@ __decorate([
 ], ArtistsController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Post)(),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(client_1.UserRole.ADMIN),
     (0, swagger_1.ApiBearerAuth)(),
-    (0, swagger_1.ApiOperation)({ summary: 'Crear artista (admin)' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Crear artista (solo administrador)' }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [artist_dto_1.CreateArtistDto]),
@@ -109,12 +116,14 @@ __decorate([
 ], ArtistsController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':slug'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(client_1.UserRole.ADMIN),
     (0, swagger_1.ApiBearerAuth)(),
-    (0, swagger_1.ApiOperation)({ summary: 'Desactivar artista (admin)' }),
-    __param(0, (0, common_1.Param)('slug')),
+    (0, swagger_1.ApiOperation)({ summary: 'Desactivar artista (solo administrador)' }),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)('slug')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], ArtistsController.prototype, "remove", null);
 __decorate([
@@ -204,13 +213,9 @@ __decorate([
     }),
     (0, swagger_1.ApiOperation)({ summary: 'Subir una foto a la galería del artista' }),
     (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file', {
-        storage: (0, multer_1.diskStorage)({
-            destination: './uploads/artists',
-            filename: (req, file, cb) => {
-                const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-                cb(null, `${file.fieldname}-${uniqueSuffix}${(0, path_1.extname)(file.originalname)}`);
-            },
-        }),
+        limits: { fileSize: multer_image_config_1.IMAGE_UPLOAD_MAX_BYTES },
+        fileFilter: multer_image_config_1.imageFileFilter,
+        storage: (0, multer_image_config_1.galleryDiskStorage)('file'),
     })),
     __param(0, (0, common_1.Param)('slug')),
     __param(1, (0, common_1.UploadedFile)()),
@@ -246,13 +251,9 @@ __decorate([
     }),
     (0, swagger_1.ApiOperation)({ summary: 'Subir la foto de portada principal del artista' }),
     (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file', {
-        storage: (0, multer_1.diskStorage)({
-            destination: './uploads/artists',
-            filename: (req, file, cb) => {
-                const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-                cb(null, `cover-${uniqueSuffix}${(0, path_1.extname)(file.originalname)}`);
-            },
-        }),
+        limits: { fileSize: multer_image_config_1.IMAGE_UPLOAD_MAX_BYTES },
+        fileFilter: multer_image_config_1.imageFileFilter,
+        storage: (0, multer_image_config_1.galleryDiskStorage)('cover'),
     })),
     __param(0, (0, common_1.Param)('slug')),
     __param(1, (0, common_1.UploadedFile)()),

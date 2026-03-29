@@ -1,8 +1,16 @@
+import { UserRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateArtistDto, UpdateArtistDto, CreateSpecDto, CreateSocialDto } from './dto/artist.dto';
+type AuthUser = {
+    role: UserRole;
+    artists: {
+        id: string;
+    }[];
+};
 export declare class ArtistsService {
     private prisma;
     constructor(prisma: PrismaService);
+    private canManageArtist;
     findAll(): Promise<({
         genres: {
             id: number;
@@ -129,7 +137,7 @@ export declare class ArtistsService {
         whatsapp: string | null;
         updatedAt: Date;
     }>;
-    update(user: any, slug: string, dto: UpdateArtistDto): Promise<{
+    update(user: AuthUser, slug: string, dto: UpdateArtistDto): Promise<{
         id: string;
         name: string;
         isActive: boolean;
@@ -143,7 +151,7 @@ export declare class ArtistsService {
         whatsapp: string | null;
         updatedAt: Date;
     }>;
-    remove(slug: string): Promise<{
+    remove(user: AuthUser, slug: string): Promise<{
         id: string;
         name: string;
         isActive: boolean;
@@ -157,43 +165,43 @@ export declare class ArtistsService {
         whatsapp: string | null;
         updatedAt: Date;
     }>;
-    addSpec(user: any, slug: string, dto: CreateSpecDto): Promise<{
+    addSpec(user: AuthUser, slug: string, dto: CreateSpecDto): Promise<{
         id: number;
         label: string;
         category: string;
         artistId: string;
     }>;
-    removeSpec(user: any, slug: string, specId: number): Promise<{
+    removeSpec(user: AuthUser, slug: string, specId: number): Promise<{
         id: number;
         label: string;
         category: string;
         artistId: string;
     }>;
-    addSocial(user: any, slug: string, dto: CreateSocialDto): Promise<{
+    addSocial(user: AuthUser, slug: string, dto: CreateSocialDto): Promise<{
         id: number;
         platform: string;
         url: string;
         label: string | null;
         artistId: string;
     }>;
-    removeSocial(user: any, slug: string, socialId: number): Promise<{
+    removeSocial(user: AuthUser, slug: string, socialId: number): Promise<{
         id: number;
         platform: string;
         url: string;
         label: string | null;
         artistId: string;
     }>;
-    addGenre(user: any, slug: string, dto: import('./dto/artist.dto').CreateGenreDto): Promise<{
+    addGenre(user: AuthUser, slug: string, dto: import('./dto/artist.dto').CreateGenreDto): Promise<{
         id: number;
         name: string;
         artistId: string;
     }>;
-    removeGenre(user: any, slug: string, genreId: number): Promise<{
+    removeGenre(user: AuthUser, slug: string, genreId: number): Promise<{
         id: number;
         name: string;
         artistId: string;
     }>;
-    addPhoto(user: any, slug: string, url: string): Promise<{
+    addPhoto(user: AuthUser, slug: string, url: string): Promise<{
         id: number;
         isActive: boolean;
         createdAt: Date;
@@ -203,7 +211,7 @@ export declare class ArtistsService {
         artistId: string;
         caption: string | null;
     }>;
-    removePhoto(user: any, slug: string, photoId: number): Promise<{
+    removePhoto(user: AuthUser, slug: string, photoId: number): Promise<{
         id: number;
         isActive: boolean;
         createdAt: Date;
@@ -213,7 +221,7 @@ export declare class ArtistsService {
         artistId: string;
         caption: string | null;
     }>;
-    uploadCover(user: any, slug: string, url: string): Promise<{
+    uploadCover(user: AuthUser, slug: string, url: string): Promise<{
         id: string;
         name: string;
         isActive: boolean;
@@ -228,3 +236,4 @@ export declare class ArtistsService {
         updatedAt: Date;
     }>;
 }
+export {};

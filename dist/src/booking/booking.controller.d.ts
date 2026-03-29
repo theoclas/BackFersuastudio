@@ -20,11 +20,11 @@ export declare class BookingController {
         updatedAt: Date;
         status: import("@prisma/client").$Enums.BookingStatus;
         artistId: string | null;
+        message: string | null;
         phone: string | null;
         eventType: string;
         eventDate: Date | null;
         eventCity: string | null;
-        message: string | null;
         adminNotes: string | null;
     })[]>;
     findOne(id: string): Promise<{
@@ -50,11 +50,11 @@ export declare class BookingController {
         updatedAt: Date;
         status: import("@prisma/client").$Enums.BookingStatus;
         artistId: string | null;
+        message: string | null;
         phone: string | null;
         eventType: string;
         eventDate: Date | null;
         eventCity: string | null;
-        message: string | null;
         adminNotes: string | null;
     }>;
     updateStatus(id: string, dto: UpdateBookingStatusDto): Promise<{
@@ -65,11 +65,11 @@ export declare class BookingController {
         updatedAt: Date;
         status: import("@prisma/client").$Enums.BookingStatus;
         artistId: string | null;
+        message: string | null;
         phone: string | null;
         eventType: string;
         eventDate: Date | null;
         eventCity: string | null;
-        message: string | null;
         adminNotes: string | null;
     }>;
 }

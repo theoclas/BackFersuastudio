@@ -1,5 +1,9 @@
-import { CreateUserDto } from './create-user.dto';
-declare const UpdateUserDto_base: import("@nestjs/common").Type<Partial<CreateUserDto>>;
-export declare class UpdateUserDto extends UpdateUserDto_base {
+import { UserRole } from '@prisma/client';
+export declare class UpdateUserDto {
+    email?: string;
+    password?: string;
+    name?: string;
+    role?: UserRole;
+    isActive?: boolean;
+    artistIds?: string[];
 }
-export {};

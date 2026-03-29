@@ -143,7 +143,7 @@ export declare class ArtistsController {
         whatsapp: string | null;
         updatedAt: Date;
     }>;
-    remove(slug: string): Promise<{
+    remove(req: any, slug: string): Promise<{
         id: string;
         name: string;
         isActive: boolean;
@@ -193,7 +193,7 @@ export declare class ArtistsController {
         name: string;
         artistId: string;
     }>;
-    uploadPhoto(slug: string, file: any, req: any): Promise<{
+    uploadPhoto(slug: string, file: Express.Multer.File | undefined, req: any): Promise<{
         id: number;
         isActive: boolean;
         createdAt: Date;
@@ -213,7 +213,7 @@ export declare class ArtistsController {
         artistId: string;
         caption: string | null;
     }>;
-    uploadCover(slug: string, file: any, req: any): Promise<{
+    uploadCover(slug: string, file: Express.Multer.File | undefined, req: any): Promise<{
         id: string;
         name: string;
         isActive: boolean;

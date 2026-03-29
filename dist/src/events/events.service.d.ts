@@ -1,8 +1,16 @@
+import { UserRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateEventDto, UpdateEventDto } from './dto/event.dto';
+type AuthUser = {
+    role: UserRole;
+    artists: {
+        id: string;
+    }[];
+};
 export declare class EventsService {
     private prisma;
     constructor(prisma: PrismaService);
+    private canManageArtist;
     findAll(artistSlug?: string): Promise<({
         artist: {
             name: string;
@@ -67,7 +75,7 @@ export declare class EventsService {
         ticketUrl: string | null;
         notes: string | null;
     }>;
-    create(user: any, dto: CreateEventDto): Promise<{
+    create(user: AuthUser, dto: CreateEventDto): Promise<{
         id: string;
         createdAt: Date;
         city: string;
@@ -80,7 +88,7 @@ export declare class EventsService {
         ticketUrl: string | null;
         notes: string | null;
     }>;
-    update(user: any, id: string, dto: UpdateEventDto): Promise<{
+    update(user: AuthUser, id: string, dto: UpdateEventDto): Promise<{
         id: string;
         createdAt: Date;
         city: string;
@@ -93,7 +101,7 @@ export declare class EventsService {
         ticketUrl: string | null;
         notes: string | null;
     }>;
-    remove(user: any, id: string): Promise<{
+    remove(user: AuthUser, id: string): Promise<{
         id: string;
         createdAt: Date;
         city: string;
@@ -107,3 +115,4 @@ export declare class EventsService {
         notes: string | null;
     }>;
 }
+export {};

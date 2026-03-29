@@ -11,11 +11,20 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ArtistsService = void 0;
 const common_1 = require("@nestjs/common");
+const fs_1 = require("fs");
+const promises_1 = require("fs/promises");
+const path_1 = require("path");
+const client_1 = require("@prisma/client");
 const prisma_service_1 = require("../prisma/prisma.service");
 let ArtistsService = class ArtistsService {
     prisma;
     constructor(prisma) {
         this.prisma = prisma;
+    }
+    canManageArtist(user, artistId) {
+        if (user.role === client_1.UserRole.ADMIN)
+            return true;
+        return user.artists.some((a) => a.id === artistId);
     }
     async findAll() {
         return this.prisma.artist.findMany({
@@ -66,20 +75,21 @@ let ArtistsService = class ArtistsService {
     }
     async update(user, slug, dto) {
         const artist = await this.findBySlug(slug);
-        const hasPermission = user.artists.some((a) => a.id === artist.id);
-        if (!hasPermission) {
+        if (!this.canManageArtist(user, artist.id)) {
             throw new common_1.UnauthorizedException('No tienes permisos para editar este perfil.');
         }
         return this.prisma.artist.update({ where: { slug }, data: dto });
     }
-    async remove(slug) {
+    async remove(user, slug) {
+        if (user.role !== client_1.UserRole.ADMIN) {
+            throw new common_1.UnauthorizedException('Solo un administrador puede desactivar artistas.');
+        }
         await this.findBySlug(slug);
         return this.prisma.artist.update({ where: { slug }, data: { isActive: false } });
     }
     async addSpec(user, slug, dto) {
         const artist = await this.findBySlug(slug);
-        const hasPermission = user.artists.some((a) => a.id === artist.id);
-        if (!hasPermission) {
+        if (!this.canManageArtist(user, artist.id)) {
             throw new common_1.UnauthorizedException('No tienes permisos para agregar specs.');
         }
         return this.prisma.spec.create({
@@ -92,8 +102,7 @@ let ArtistsService = class ArtistsService {
     }
     async removeSpec(user, slug, specId) {
         const artist = await this.findBySlug(slug);
-        const hasPermission = user.artists.some((a) => a.id === artist.id);
-        if (!hasPermission) {
+        if (!this.canManageArtist(user, artist.id)) {
             throw new common_1.UnauthorizedException('No tienes permisos para eliminar specs.');
         }
         const spec = await this.prisma.spec.findUnique({ where: { id: specId } });
@@ -104,8 +113,7 @@ let ArtistsService = class ArtistsService {
     }
     async addSocial(user, slug, dto) {
         const artist = await this.findBySlug(slug);
-        const hasPermission = user.artists.some((a) => a.id === artist.id);
-        if (!hasPermission) {
+        if (!this.canManageArtist(user, artist.id)) {
             throw new common_1.UnauthorizedException('No tienes permisos para agregar redes sociales.');
         }
         return this.prisma.social.create({
@@ -119,8 +127,7 @@ let ArtistsService = class ArtistsService {
     }
     async removeSocial(user, slug, socialId) {
         const artist = await this.findBySlug(slug);
-        const hasPermission = user.artists.some((a) => a.id === artist.id);
-        if (!hasPermission) {
+        if (!this.canManageArtist(user, artist.id)) {
             throw new common_1.UnauthorizedException('No tienes permisos para eliminar redes sociales.');
         }
         const social = await this.prisma.social.findUnique({ where: { id: socialId } });
@@ -131,8 +138,7 @@ let ArtistsService = class ArtistsService {
     }
     async addGenre(user, slug, dto) {
         const artist = await this.findBySlug(slug);
-        const hasPermission = user.artists.some((a) => a.id === artist.id);
-        if (!hasPermission) {
+        if (!this.canManageArtist(user, artist.id)) {
             throw new common_1.UnauthorizedException('No tienes permisos para agregar géneros.');
         }
         return this.prisma.genre.create({
@@ -144,8 +150,7 @@ let ArtistsService = class ArtistsService {
     }
     async removeGenre(user, slug, genreId) {
         const artist = await this.findBySlug(slug);
-        const hasPermission = user.artists.some((a) => a.id === artist.id);
-        if (!hasPermission) {
+        if (!this.canManageArtist(user, artist.id)) {
             throw new common_1.UnauthorizedException('No tienes permisos para eliminar géneros.');
         }
         const genre = await this.prisma.genre.findUnique({ where: { id: genreId } });
@@ -156,8 +161,7 @@ let ArtistsService = class ArtistsService {
     }
     async addPhoto(user, slug, url) {
         const artist = await this.findBySlug(slug);
-        const hasPermission = user.artists.some((a) => a.id === artist.id);
-        if (!hasPermission) {
+        if (!this.canManageArtist(user, artist.id)) {
             throw new common_1.UnauthorizedException('No tienes permisos para subir fotos.');
         }
         return this.prisma.photo.create({
@@ -169,20 +173,24 @@ let ArtistsService = class ArtistsService {
     }
     async removePhoto(user, slug, photoId) {
         const artist = await this.findBySlug(slug);
-        const hasPermission = user.artists.some((a) => a.id === artist.id);
-        if (!hasPermission) {
+        if (!this.canManageArtist(user, artist.id)) {
             throw new common_1.UnauthorizedException('No tienes permisos para eliminar fotos.');
         }
         const photo = await this.prisma.photo.findUnique({ where: { id: photoId } });
         if (!photo || photo.artistId !== artist.id) {
             throw new common_1.NotFoundException('Foto no encontrada o no pertenece a este artista.');
         }
+        if (photo.url.startsWith('/uploads/')) {
+            const abs = (0, path_1.join)(process.cwd(), photo.url.replace(/^\/+/, ''));
+            if ((0, fs_1.existsSync)(abs)) {
+                await (0, promises_1.unlink)(abs).catch(() => undefined);
+            }
+        }
         return this.prisma.photo.delete({ where: { id: photoId } });
     }
     async uploadCover(user, slug, url) {
         const artist = await this.findBySlug(slug);
-        const hasPermission = user.artists.some((a) => a.id === artist.id);
-        if (!hasPermission) {
+        if (!this.canManageArtist(user, artist.id)) {
             throw new common_1.UnauthorizedException('No tienes permisos para cambiar la foto de portada.');
         }
         return this.prisma.artist.update({

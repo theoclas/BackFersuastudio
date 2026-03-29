@@ -48,13 +48,18 @@ async function main() {
                 email: adminEmail,
                 password: hash,
                 name: 'Fernando Admin',
+                role: client_1.UserRole.ADMIN,
             },
         });
         console.log(`✅ Admin creado: ${adminEmail} / ${adminPassword}`);
         console.log('   ⚠️  Cambia la contraseña después del primer login!\n');
     }
     else {
-        console.log(`ℹ️  Admin ya existe: ${adminEmail}\n`);
+        await prisma.user.update({
+            where: { email: adminEmail },
+            data: { role: client_1.UserRole.ADMIN },
+        });
+        console.log(`ℹ️  Admin ya existe (rol ADMIN asegurado): ${adminEmail}\n`);
     }
     const macfly = await prisma.artist.upsert({
         where: { slug: 'macfly-mikebran' },

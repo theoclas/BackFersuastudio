@@ -158,6 +158,11 @@ model Photo {
   @@map("photos")
 }
 
+enum UserRole {
+  ADMIN    // Gestión global: usuarios, cualquier artista, crear/desactivar artistas
+  MANAGER  // Solo artistas asignados (relación users ↔ artists)
+}
+
 // ──────────────────────────────────────────
 //  USUARIOS / LOGIN
 // ──────────────────────────────────────────
@@ -166,6 +171,7 @@ model User {
   email     String   @unique @db.VarChar(150)
   password  String   @db.VarChar(255)   // Contraseña protegida (hash)
   name      String   @db.VarChar(100)
+  role      UserRole @default(MANAGER)
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
 
