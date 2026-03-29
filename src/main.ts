@@ -25,8 +25,17 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   // ── CORS — permite llamadas desde el frontend ──
+  // FRONTEND_URL: un origen o varios separados por coma (ej. http://localhost:5173,https://tudominio.com)
+  const corsOrigins = process.env.FRONTEND_URL?.trim();
+  const origin =
+    !corsOrigins || corsOrigins === '*'
+      ? true
+      : corsOrigins.includes(',')
+        ? corsOrigins.split(',').map((o) => o.trim()).filter(Boolean)
+        : corsOrigins;
+
   app.enableCors({
-    origin: process.env.FRONTEND_URL || '*',
+    origin,
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS', 'PUT'],
     credentials: true,
   });
