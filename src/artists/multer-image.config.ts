@@ -1,15 +1,16 @@
 import { BadRequestException } from '@nestjs/common';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import type { MulterFileFilterCallback, MulterUploadedFile, Request } from '../types/multer-upload';
 
 export const IMAGE_UPLOAD_MAX_BYTES = 8 * 1024 * 1024; // 8 MB
 
 const imageMime = /^image\/(jpeg|png|webp|gif)$/i;
 
 export function imageFileFilter(
-  _req: Express.Request,
-  file: Express.Multer.File,
-  cb: (error: Error | null, acceptFile: boolean) => void,
+  _req: Request,
+  file: MulterUploadedFile,
+  cb: MulterFileFilterCallback,
 ): void {
   if (!imageMime.test(file.mimetype || '')) {
     cb(new BadRequestException('Solo se permiten imágenes JPEG, PNG, WebP o GIF.') as Error, false);

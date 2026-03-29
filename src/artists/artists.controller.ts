@@ -22,6 +22,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
+import type { MulterUploadedFile } from '../types/multer-upload';
 
 @ApiTags('Artists')
 @Controller('artists')
@@ -138,7 +139,7 @@ export class ArtistsController {
       storage: galleryDiskStorage('file'),
     }),
   )
-  async uploadPhoto(@Param('slug') slug: string, @UploadedFile() file: Express.Multer.File | undefined, @Req() req: any) {
+  async uploadPhoto(@Param('slug') slug: string, @UploadedFile() file: MulterUploadedFile | undefined, @Req() req: any) {
     if (!file) throw new BadRequestException('Archivo de imagen requerido.');
     return this.artistsService.addPhoto(req.user, slug, `/uploads/artists/${file.filename}`);
   }
@@ -172,7 +173,7 @@ export class ArtistsController {
       storage: galleryDiskStorage('cover'),
     }),
   )
-  async uploadCover(@Param('slug') slug: string, @UploadedFile() file: Express.Multer.File | undefined, @Req() req: any) {
+  async uploadCover(@Param('slug') slug: string, @UploadedFile() file: MulterUploadedFile | undefined, @Req() req: any) {
     if (!file) throw new BadRequestException('Archivo de imagen requerido.');
     return this.artistsService.uploadCover(req.user, slug, `/uploads/artists/${file.filename}`);
   }

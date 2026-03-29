@@ -1,5 +1,6 @@
 import { ArtistsService } from './artists.service';
 import { CreateArtistDto, UpdateArtistDto, CreateSpecDto, CreateSocialDto, CreateGenreDto } from './dto/artist.dto';
+import type { MulterUploadedFile } from '../types/multer-upload';
 export declare class ArtistsController {
     private readonly artistsService;
     constructor(artistsService: ArtistsService);
@@ -193,7 +194,7 @@ export declare class ArtistsController {
         name: string;
         artistId: string;
     }>;
-    uploadPhoto(slug: string, file: Express.Multer.File | undefined, req: any): Promise<{
+    uploadPhoto(slug: string, file: MulterUploadedFile | undefined, req: any): Promise<{
         id: number;
         isActive: boolean;
         createdAt: Date;
@@ -213,7 +214,7 @@ export declare class ArtistsController {
         artistId: string;
         caption: string | null;
     }>;
-    uploadCover(slug: string, file: Express.Multer.File | undefined, req: any): Promise<{
+    uploadCover(slug: string, file: MulterUploadedFile | undefined, req: any): Promise<{
         id: string;
         name: string;
         isActive: boolean;
