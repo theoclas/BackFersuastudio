@@ -106,3 +106,9 @@ export class CreateSocialDto {
   @IsString()
   label?: string;
 }
+
+export class CreateGenreDto {
+  @ApiProperty({ example: 'Tech House' })
+  @IsString()
+  name: string;
+}

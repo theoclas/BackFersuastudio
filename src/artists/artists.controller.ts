@@ -4,7 +4,7 @@ import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { ArtistsService } from './artists.service';
-import { CreateArtistDto, UpdateArtistDto, CreateSpecDto, CreateSocialDto } from './dto/artist.dto';
+import { CreateArtistDto, UpdateArtistDto, CreateSpecDto, CreateSocialDto, CreateGenreDto } from './dto/artist.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Artists')
@@ -80,6 +80,23 @@ export class ArtistsController {
   @ApiOperation({ summary: 'Eliminar Red Social' })
   removeSocial(@Param('slug') slug: string, @Param('socialId', ParseIntPipe) socialId: number, @Req() req: any) {
     return this.artistsService.removeSocial(req.user, slug, socialId);
+  }
+
+  // ==== GENRES ====
+  @Post(':slug/genres')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Agregar Género Musical al Artista' })
+  addGenre(@Param('slug') slug: string, @Body() dto: CreateGenreDto, @Req() req: any) {
+    return this.artistsService.addGenre(req.user, slug, dto);
+  }
+
+  @Delete(':slug/genres/:genreId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Eliminar Género Musical' })
+  removeGenre(@Param('slug') slug: string, @Param('genreId', ParseIntPipe) genreId: number, @Req() req: any) {
+    return this.artistsService.removeGenre(req.user, slug, genreId);
   }
 
   // ==== PHOTOS / GALLERY ====

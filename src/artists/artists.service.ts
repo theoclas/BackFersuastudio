@@ -142,6 +142,39 @@ export class ArtistsService {
     return this.prisma.social.delete({ where: { id: socialId } });
   }
 
+  // ==== GENRES ====
+  async addGenre(user: any, slug: string, dto: import('./dto/artist.dto').CreateGenreDto) {
+    const artist = await this.findBySlug(slug);
+    
+    const hasPermission = user.artists.some((a: any) => a.id === artist.id);
+    if (!hasPermission) {
+      throw new UnauthorizedException('No tienes permisos para agregar géneros.');
+    }
+
+    return this.prisma.genre.create({
+      data: {
+        name: dto.name,
+        artistId: artist.id,
+      },
+    });
+  }
+
+  async removeGenre(user: any, slug: string, genreId: number) {
+    const artist = await this.findBySlug(slug);
+    
+    const hasPermission = user.artists.some((a: any) => a.id === artist.id);
+    if (!hasPermission) {
+      throw new UnauthorizedException('No tienes permisos para eliminar géneros.');
+    }
+
+    const genre = await this.prisma.genre.findUnique({ where: { id: genreId } });
+    if (!genre || genre.artistId !== artist.id) {
+      throw new NotFoundException('Género no encontrado o no pertenece a este artista.');
+    }
+
+    return this.prisma.genre.delete({ where: { id: genreId } });
+  }
+
   // ==== PHOTOS ====
   async addPhoto(user: any, slug: string, url: string) {
     const artist = await this.findBySlug(slug);

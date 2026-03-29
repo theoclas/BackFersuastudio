@@ -1,5 +1,5 @@
 import { ArtistsService } from './artists.service';
-import { CreateArtistDto, UpdateArtistDto, CreateSpecDto, CreateSocialDto } from './dto/artist.dto';
+import { CreateArtistDto, UpdateArtistDto, CreateSpecDto, CreateSocialDto, CreateGenreDto } from './dto/artist.dto';
 export declare class ArtistsController {
     private readonly artistsService;
     constructor(artistsService: ArtistsService);
@@ -181,6 +181,16 @@ export declare class ArtistsController {
         platform: string;
         url: string;
         label: string | null;
+        artistId: string;
+    }>;
+    addGenre(slug: string, dto: CreateGenreDto, req: any): Promise<{
+        id: number;
+        name: string;
+        artistId: string;
+    }>;
+    removeGenre(slug: string, genreId: number, req: any): Promise<{
+        id: number;
+        name: string;
         artistId: string;
     }>;
     uploadPhoto(slug: string, file: any, req: any): Promise<{

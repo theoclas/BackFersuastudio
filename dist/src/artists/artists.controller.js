@@ -53,6 +53,12 @@ let ArtistsController = class ArtistsController {
     removeSocial(slug, socialId, req) {
         return this.artistsService.removeSocial(req.user, slug, socialId);
     }
+    addGenre(slug, dto, req) {
+        return this.artistsService.addGenre(req.user, slug, dto);
+    }
+    removeGenre(slug, genreId, req) {
+        return this.artistsService.removeGenre(req.user, slug, genreId);
+    }
     async uploadPhoto(slug, file, req) {
         return this.artistsService.addPhoto(req.user, slug, `/uploads/artists/${file.filename}`);
     }
@@ -159,6 +165,30 @@ __decorate([
     __metadata("design:paramtypes", [String, Number, Object]),
     __metadata("design:returntype", void 0)
 ], ArtistsController.prototype, "removeSocial", null);
+__decorate([
+    (0, common_1.Post)(':slug/genres'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Agregar Género Musical al Artista' }),
+    __param(0, (0, common_1.Param)('slug')),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, artist_dto_1.CreateGenreDto, Object]),
+    __metadata("design:returntype", void 0)
+], ArtistsController.prototype, "addGenre", null);
+__decorate([
+    (0, common_1.Delete)(':slug/genres/:genreId'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Eliminar Género Musical' }),
+    __param(0, (0, common_1.Param)('slug')),
+    __param(1, (0, common_1.Param)('genreId', common_1.ParseIntPipe)),
+    __param(2, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Number, Object]),
+    __metadata("design:returntype", void 0)
+], ArtistsController.prototype, "removeGenre", null);
 __decorate([
     (0, common_1.Post)(':slug/photos'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

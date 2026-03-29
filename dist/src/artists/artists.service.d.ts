@@ -183,6 +183,16 @@ export declare class ArtistsService {
         label: string | null;
         artistId: string;
     }>;
+    addGenre(user: any, slug: string, dto: import('./dto/artist.dto').CreateGenreDto): Promise<{
+        id: number;
+        name: string;
+        artistId: string;
+    }>;
+    removeGenre(user: any, slug: string, genreId: number): Promise<{
+        id: number;
+        name: string;
+        artistId: string;
+    }>;
     addPhoto(user: any, slug: string, url: string): Promise<{
         id: number;
         isActive: boolean;

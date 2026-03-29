@@ -129,6 +129,31 @@ let ArtistsService = class ArtistsService {
         }
         return this.prisma.social.delete({ where: { id: socialId } });
     }
+    async addGenre(user, slug, dto) {
+        const artist = await this.findBySlug(slug);
+        const hasPermission = user.artists.some((a) => a.id === artist.id);
+        if (!hasPermission) {
+            throw new common_1.UnauthorizedException('No tienes permisos para agregar géneros.');
+        }
+        return this.prisma.genre.create({
+            data: {
+                name: dto.name,
+                artistId: artist.id,
+            },
+        });
+    }
+    async removeGenre(user, slug, genreId) {
+        const artist = await this.findBySlug(slug);
+        const hasPermission = user.artists.some((a) => a.id === artist.id);
+        if (!hasPermission) {
+            throw new common_1.UnauthorizedException('No tienes permisos para eliminar géneros.');
+        }
+        const genre = await this.prisma.genre.findUnique({ where: { id: genreId } });
+        if (!genre || genre.artistId !== artist.id) {
+            throw new common_1.NotFoundException('Género no encontrado o no pertenece a este artista.');
+        }
+        return this.prisma.genre.delete({ where: { id: genreId } });
+    }
     async addPhoto(user, slug, url) {
         const artist = await this.findBySlug(slug);
         const hasPermission = user.artists.some((a) => a.id === artist.id);

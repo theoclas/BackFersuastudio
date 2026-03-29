@@ -27,3 +27,6 @@ export declare class CreateSocialDto {
     url: string;
     label?: string;
 }
+export declare class CreateGenreDto {
+    name: string;
+}
