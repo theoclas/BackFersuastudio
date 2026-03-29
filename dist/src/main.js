@@ -18,8 +18,14 @@ async function bootstrap() {
     }));
     app.use(compression());
     app.setGlobalPrefix('api');
+    const corsOrigins = process.env.FRONTEND_URL?.trim();
+    const origin = !corsOrigins || corsOrigins === '*'
+        ? true
+        : corsOrigins.includes(',')
+            ? corsOrigins.split(',').map((o) => o.trim()).filter(Boolean)
+            : corsOrigins;
     app.enableCors({
-        origin: process.env.FRONTEND_URL || '*',
+        origin,
         methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS', 'PUT'],
         credentials: true,
     });
