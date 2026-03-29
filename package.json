@@ -10,7 +10,7 @@
     "build": "echo \"Plan C activado: Saltando build en Hostinger porque ya viene compilado de local\"",
     "postinstall": "PRISMA_HIDE_UPDATE_MESSAGE=true npx prisma@6.19.2 generate",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "node dist/main",
+    "start": "node dist/src/main",
     "start:dev": "nest start --watch",
     "start:local": "nest start",
     "start:debug": "nest start --debug --watch",
