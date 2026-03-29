@@ -36,7 +36,7 @@ No hay forma amigable en Hostinger de auto interpretar NestJS sin borrar `node_m
 Debes escribir manualmente estas variables en la sección de Variables de Entorno del propio Hostinger. **No elimines ninguna e ignora colocar comillas.**
 
 *   `NODE_ENV`: **production** *(Obligatorio, apaga el Swagger para ocultar el mapa de la API).*
-*   `PORT`: **3000**
+*   `PORT`: **3001** *(O cualquier puerto difente a 3000 para evitar colisiones con otros proyectos en tu Hostinger).*
 *   `DATABASE_URL`: **mysql://USUARIO:PASSWORD@localhost:3306/BASEDEDATOS** *(Usa localhost si la BD está en la misma cuenta de Hostinger que NodeJS).*
 *   `FRONTEND_URL`: **https://tu-dominio.com** *(Reemplaza por la URL pública real del frontend).*
 *   `JWT_SECRET`: **generar_un_string_largo_y_difícil_aquí** *(Ej. 4sU#5a8n@Xb2L)*
