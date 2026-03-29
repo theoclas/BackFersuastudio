@@ -6,7 +6,8 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "npm install --include=dev --ignore-scripts && nest build",
+    "build:local": "nest build",
+    "build": "echo \"Plan C activado: Saltando build en Hostinger porque ya viene compilado de local\"",
     "postinstall": "PRISMA_HIDE_UPDATE_MESSAGE=true npx prisma@6.19.2 generate",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "node dist/main",

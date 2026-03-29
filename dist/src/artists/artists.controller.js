@@ -1,0 +1,239 @@
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ArtistsController = void 0;
+const common_1 = require("@nestjs/common");
+const platform_express_1 = require("@nestjs/platform-express");
+const multer_1 = require("multer");
+const path_1 = require("path");
+const swagger_1 = require("@nestjs/swagger");
+const artists_service_1 = require("./artists.service");
+const artist_dto_1 = require("./dto/artist.dto");
+const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
+let ArtistsController = class ArtistsController {
+    artistsService;
+    constructor(artistsService) {
+        this.artistsService = artistsService;
+    }
+    findAll() {
+        return this.artistsService.findAll();
+    }
+    findOne(slug) {
+        return this.artistsService.findBySlug(slug);
+    }
+    create(dto) {
+        return this.artistsService.create(dto);
+    }
+    update(slug, dto, req) {
+        return this.artistsService.update(req.user, slug, dto);
+    }
+    remove(slug) {
+        return this.artistsService.remove(slug);
+    }
+    addSpec(slug, dto, req) {
+        return this.artistsService.addSpec(req.user, slug, dto);
+    }
+    removeSpec(slug, specId, req) {
+        return this.artistsService.removeSpec(req.user, slug, specId);
+    }
+    addSocial(slug, dto, req) {
+        return this.artistsService.addSocial(req.user, slug, dto);
+    }
+    removeSocial(slug, socialId, req) {
+        return this.artistsService.removeSocial(req.user, slug, socialId);
+    }
+    async uploadPhoto(slug, file, req) {
+        return this.artistsService.addPhoto(req.user, slug, `/uploads/artists/${file.filename}`);
+    }
+    removePhoto(slug, photoId, req) {
+        return this.artistsService.removePhoto(req.user, slug, photoId);
+    }
+    async uploadCover(slug, file, req) {
+        return this.artistsService.uploadCover(req.user, slug, `/uploads/artists/${file.filename}`);
+    }
+};
+exports.ArtistsController = ArtistsController;
+__decorate([
+    (0, common_1.Get)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Listar todos los artistas activos (público)' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], ArtistsController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.Get)(':slug'),
+    (0, swagger_1.ApiOperation)({ summary: 'Obtener artista por slug (público)' }),
+    __param(0, (0, common_1.Param)('slug')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], ArtistsController.prototype, "findOne", null);
+__decorate([
+    (0, common_1.Post)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Crear artista (admin)' }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [artist_dto_1.CreateArtistDto]),
+    __metadata("design:returntype", void 0)
+], ArtistsController.prototype, "create", null);
+__decorate([
+    (0, common_1.Patch)(':slug'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Actualizar artista (admin)' }),
+    __param(0, (0, common_1.Param)('slug')),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, artist_dto_1.UpdateArtistDto, Object]),
+    __metadata("design:returntype", void 0)
+], ArtistsController.prototype, "update", null);
+__decorate([
+    (0, common_1.Delete)(':slug'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Desactivar artista (admin)' }),
+    __param(0, (0, common_1.Param)('slug')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], ArtistsController.prototype, "remove", null);
+__decorate([
+    (0, common_1.Post)(':slug/specs'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Agregar Spec/Equipo al Rider del Artista' }),
+    __param(0, (0, common_1.Param)('slug')),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, artist_dto_1.CreateSpecDto, Object]),
+    __metadata("design:returntype", void 0)
+], ArtistsController.prototype, "addSpec", null);
+__decorate([
+    (0, common_1.Delete)(':slug/specs/:specId'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Eliminar Spec/Equipo del Rider' }),
+    __param(0, (0, common_1.Param)('slug')),
+    __param(1, (0, common_1.Param)('specId', common_1.ParseIntPipe)),
+    __param(2, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Number, Object]),
+    __metadata("design:returntype", void 0)
+], ArtistsController.prototype, "removeSpec", null);
+__decorate([
+    (0, common_1.Post)(':slug/socials'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Agregar Red Social al Artista' }),
+    __param(0, (0, common_1.Param)('slug')),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, artist_dto_1.CreateSocialDto, Object]),
+    __metadata("design:returntype", void 0)
+], ArtistsController.prototype, "addSocial", null);
+__decorate([
+    (0, common_1.Delete)(':slug/socials/:socialId'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Eliminar Red Social' }),
+    __param(0, (0, common_1.Param)('slug')),
+    __param(1, (0, common_1.Param)('socialId', common_1.ParseIntPipe)),
+    __param(2, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Number, Object]),
+    __metadata("design:returntype", void 0)
+], ArtistsController.prototype, "removeSocial", null);
+__decorate([
+    (0, common_1.Post)(':slug/photos'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiConsumes)('multipart/form-data'),
+    (0, swagger_1.ApiBody)({
+        schema: {
+            type: 'object',
+            properties: {
+                file: { type: 'string', format: 'binary' },
+            },
+        },
+    }),
+    (0, swagger_1.ApiOperation)({ summary: 'Subir una foto a la galería del artista' }),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file', {
+        storage: (0, multer_1.diskStorage)({
+            destination: './uploads/artists',
+            filename: (req, file, cb) => {
+                const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+                cb(null, `${file.fieldname}-${uniqueSuffix}${(0, path_1.extname)(file.originalname)}`);
+            },
+        }),
+    })),
+    __param(0, (0, common_1.Param)('slug')),
+    __param(1, (0, common_1.UploadedFile)()),
+    __param(2, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object, Object]),
+    __metadata("design:returntype", Promise)
+], ArtistsController.prototype, "uploadPhoto", null);
+__decorate([
+    (0, common_1.Delete)(':slug/photos/:photoId'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Eliminar una foto de la galería' }),
+    __param(0, (0, common_1.Param)('slug')),
+    __param(1, (0, common_1.Param)('photoId', common_1.ParseIntPipe)),
+    __param(2, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Number, Object]),
+    __metadata("design:returntype", void 0)
+], ArtistsController.prototype, "removePhoto", null);
+__decorate([
+    (0, common_1.Post)(':slug/cover'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiConsumes)('multipart/form-data'),
+    (0, swagger_1.ApiBody)({
+        schema: {
+            type: 'object',
+            properties: {
+                file: { type: 'string', format: 'binary' },
+            },
+        },
+    }),
+    (0, swagger_1.ApiOperation)({ summary: 'Subir la foto de portada principal del artista' }),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file', {
+        storage: (0, multer_1.diskStorage)({
+            destination: './uploads/artists',
+            filename: (req, file, cb) => {
+                const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+                cb(null, `cover-${uniqueSuffix}${(0, path_1.extname)(file.originalname)}`);
+            },
+        }),
+    })),
+    __param(0, (0, common_1.Param)('slug')),
+    __param(1, (0, common_1.UploadedFile)()),
+    __param(2, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object, Object]),
+    __metadata("design:returntype", Promise)
+], ArtistsController.prototype, "uploadCover", null);
+exports.ArtistsController = ArtistsController = __decorate([
+    (0, swagger_1.ApiTags)('Artists'),
+    (0, common_1.Controller)('artists'),
+    __metadata("design:paramtypes", [artists_service_1.ArtistsService])
+], ArtistsController);
+//# sourceMappingURL=artists.controller.js.map

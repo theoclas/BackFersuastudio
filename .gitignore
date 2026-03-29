@@ -1,5 +1,5 @@
 .env
 .env.local
 .env.production
-dist/
+# Carpeta dist permitida temporalmente para subir build compilado
 node_modules/
